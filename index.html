@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ILMMTAMP | PANEL BAN</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Creepster&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    
+    <style>
+        :root {
+            --neon-green: #00ff41;
+            --blood-red: #ff0000;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            /* Menggunakan file gambar sebagai latar belakang utama */
+            background: url('de8a199e0783da5a128dc243be538b28.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: var(--neon-green);
+            font-family: 'Inter', sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* Overlay untuk memberikan efek gelap agar teks terbaca jelas */
+        .main-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5); /* Gelap 50% */
+            z-index: 1;
+        }
+
+        .content-wrapper {
+            position: relative;
+            z-index: 10;
+            height: 100%;
+        }
+
+        .terminal-font { font-family: 'JetBrains Mono', monospace; }
+        .scary-font { font-family: 'Creepster', cursive; }
+
+        .glitch {
+            position: relative;
+            animation: glitch 2s infinite linear alternate-reverse;
+        }
+        @keyframes glitch {
+            0% { text-shadow: 2px 0 red, -2px 0 blue; }
+            50% { text-shadow: -2px 0 red, 2px 0 blue; }
+            100% { text-shadow: 2px 0 red, -2px 0 blue; }
+        }
+
+        /* Efek garis-garis (scanline) seperti di screenshot */
+        .scanline {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            z-index: 5;
+            background-size: 100% 3px, 3px 100%;
+            pointer-events: none;
+        }
+
+        .android-dialog {
+            background: #212121;
+            border-radius: 4px;
+            width: 85%;
+            max-width: 320px;
+        }
+    </style>
+</head>
+<body oncontextmenu="return false;">
+
+    <div class="main-overlay"></div>
+    <div class="scanline"></div>
+
+    <div class="content-wrapper">
+        <!-- 1. LOGIN SCREEN -->
+        <div id="login-page" class="fixed inset-0 flex flex-col items-center justify-center p-8 transition-all duration-500">
+            <div class="text-center mb-10">
+                <h1 class="scary-font text-6xl text-red-600 glitch">ILMMTAMP</h1>
+                <p class="text-[10px] tracking-[0.3em] text-zinc-300 font-bold uppercase">ILMMGANTENG</p>
+            </div>
+
+            <div class="w-full max-w-sm space-y-4">
+                <input type="text" id="username" placeholder="Username" 
+                    class="w-full bg-black/70 border border-zinc-700 p-4 rounded-lg text-white focus:outline-none placeholder:text-zinc-500">
+                <input type="password" id="password" placeholder="Password" 
+                    class="w-full bg-black/70 border border-zinc-700 p-4 rounded-lg text-white focus:outline-none placeholder:text-zinc-500">
+                <button onclick="handleLogin()" class="w-full bg-red-800 hover:bg-red-700 text-white font-bold py-4 rounded-lg shadow-lg active:scale-95 transition-all">
+                    LOGIN
+                </button>
+            </div>
+            <p class="absolute bottom-10 text-[10px] text-zinc-500">Credits: @SisuryaOfficial</p>
+        </div>
+
+        <!-- 2. MAIN DASHBOARD -->
+        <div id="main-app" class="hidden opacity-0 flex flex-col min-h-screen p-6 max-w-md mx-auto">
+            <header class="text-center py-6">
+                <h2 class="scary-font text-4xl text-green-500 mb-1">ILMMTAMP BRASILEIRO</h2>
+                <p class="text-[10px] terminal-font uppercase text-white opacity-80">Server: SAO PAULO [AKTIF]</p>
+            </header>
+
+            <div class="space-y-6 mt-4">
+                <div class="space-y-2">
+                    <label class="text-[10px] uppercase font-bold text-zinc-300">Nomor Target</label>
+                    <div class="bg-black/70 border border-zinc-700 rounded-lg p-1 flex items-center">
+                        <span class="px-3 py-2 text-zinc-400">+</span>
+                        <input type="number" id="target-number" placeholder="628xxx" 
+                            class="bg-transparent w-full p-3 text-white focus:outline-none text-lg font-bold terminal-font">
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-[10px] uppercase font-bold text-zinc-300">Metode Ban</label>
+                    <div onclick="openModal()" class="w-full bg-black/70 border border-zinc-700 p-4 rounded-lg flex justify-between items-center cursor-pointer">
+                        <span id="selected-method-text" class="text-white text-sm">Pilih Metode...</span>
+                        <span>▼</span>
+                    </div>
+                </div>
+
+                <button onclick="startExecution()" class="w-full py-4 mt-4 bg-green-700 hover:bg-green-600 text-black font-black uppercase rounded-lg shadow-lg active:scale-95 transition-all">
+                    EKSEKUSI TARGET
+                </button>
+            </div>
+
+            <div id="console-box" class="hidden mt-8 flex flex-col flex-grow">
+                <div id="terminal" class="bg-black/90 border border-zinc-700 rounded-lg p-4 flex-grow overflow-y-auto max-h-[250px] terminal-font text-[10px] text-green-400"></div>
+            </div>
+
+            <footer class="mt-auto py-4 text-center text-[9px] text-zinc-400 tracking-widest">
+                PANEL VERSI 4.0.8 &copy; 2024 SISURYA
+            </footer>
+        </div>
+    </div>
+
+    <!-- MODAL -->
+    <div id="modal-overlay" class="fixed inset-0 z-[110] bg-black/80 hidden items-center justify-center opacity-0">
+        <div class="android-dialog p-6">
+            <h3 class="text-white text-xl mb-4">Pilih Metode</h3>
+            <div class="space-y-4 text-zinc-300">
+                <div onclick="selectMethod(0, 'Hard Ban (Permanen)')" class="cursor-pointer hover:text-green-500">• Hard Ban (Permanen)</div>
+                <div onclick="selectMethod(1, 'Reset Akun')" class="cursor-pointer hover:text-green-500">• Reset Akun</div>
+            </div>
+            <button onclick="closeModal()" class="mt-6 text-red-500 font-bold">BATAL</button>
+        </div>
+    </div>
+
+    <script>
+        function handleLogin() {
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+            if(user === "admin" && pass === "admin@888") {
+                gsap.to("#login-page", { opacity: 0, duration: 0.5, onComplete: () => {
+                    document.getElementById('login-page').classList.add('hidden');
+                    document.getElementById('main-app').classList.remove('hidden');
+                    gsap.to("#main-app", { opacity: 1, duration: 0.5 });
+                }});
+            } else { alert("Otorisasi Gagal!"); }
+        }
+
+        function openModal() {
+            const m = document.getElementById('modal-overlay');
+            m.classList.remove('hidden'); m.classList.add('flex');
+            gsap.to(m, { opacity: 1, duration: 0.3 });
+        }
+
+        function closeModal() {
+            const m = document.getElementById('modal-overlay');
+            gsap.to(m, { opacity: 0, duration: 0.2, onComplete: () => m.classList.add('hidden') });
+        }
+
+        function selectMethod(i, t) {
+            document.getElementById('selected-method-text').innerText = t;
+            closeModal();
+        }
+    </script>
+</body>
+</html>
